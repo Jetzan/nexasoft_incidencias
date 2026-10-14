@@ -13,8 +13,18 @@ class GestorIncidencias {
   }
 
   List<Incidencia> buscar(String texto) {
-    if (texto.trim().isEmpty) return incidencias;
-    return incidencias.where((x) => x.titulo.contains(texto)).toList();
+    final consulta = texto.trim().toLowerCase();
+
+    if (consulta.isEmpty) {
+      return incidencias;
+    }
+
+    return incidencias.where((x) {
+      final titulo = x.titulo.toLowerCase();
+      final descripcion = x.descripcion.toLowerCase();
+
+      return titulo.contains(consulta) || descripcion.contains(consulta);
+    }).toList();
   }
 
   Incidencia? porId(String id) {
@@ -32,8 +42,23 @@ class GestorIncidencias {
   Future<void> cambiarEstado(String id, String estado) async {
     for (var i = 0; i < incidencias.length; i++) {
       if (incidencias[i].id == id) {
+        final estadoAnterior = incidencias[i].estado;
         incidencias[i].estado = estado;
-        break;
+
+        try {
+          await datos.guardar(incidencias);
+        } catch (_) {
+          incidencias[i].estado = estadoAnterior;
+          rethrow;
+        }
+
+        // cantidadPendientes se mantiene en memoria y alimenta el resumen.
+        if (estadoAnterior == 'Pendiente' && estado != 'Pendiente') {
+          cantidadPendientes--;
+        } else if (estadoAnterior != 'Pendiente' && estado == 'Pendiente') {
+          cantidadPendientes++;
+        }
+        return;
       }
     }
   }
