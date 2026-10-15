@@ -2,7 +2,8 @@ import '../data/almacen_local.dart';
 import '../model/incidencia.dart';
 
 class GestorIncidencias {
-  final AlmacenLocal datos = AlmacenLocal();
+  AlmacenLocal? _datos;
+  AlmacenLocal get datos => _datos ??= AlmacenLocal();
   List<Incidencia> incidencias = [];
   int cantidadPendientes = 0;
 
@@ -12,18 +13,24 @@ class GestorIncidencias {
         incidencias.where((x) => x.estado == 'Pendiente').length;
   }
 
-  List<Incidencia> buscar(String texto) {
+  List<Incidencia> buscar(
+    String texto, {
+    String? estado,
+    Prioridad? prioridad,
+  }) {
     final consulta = texto.trim().toLowerCase();
-
-    if (consulta.isEmpty) {
-      return incidencias;
-    }
 
     return incidencias.where((x) {
       final titulo = x.titulo.toLowerCase();
       final descripcion = x.descripcion.toLowerCase();
 
-      return titulo.contains(consulta) || descripcion.contains(consulta);
+      final coincideTexto = consulta.isEmpty ||
+          titulo.contains(consulta) ||
+          descripcion.contains(consulta);
+      final coincideEstado = estado == null || x.estado == estado;
+      final coincidePrioridad = prioridad == null || x.prioridad == prioridad;
+
+      return coincideTexto && coincideEstado && coincidePrioridad;
     }).toList();
   }
 
