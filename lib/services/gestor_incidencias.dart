@@ -64,7 +64,7 @@ class GestorIncidencias {
   }
 
   Future<void> crear(String titulo, String descripcion, String cliente,
-      String categoria) async {
+      String categoria, Prioridad prioridad) async {
     final nuevo = Incidencia(
       id: 'INC-${DateTime.now().microsecondsSinceEpoch}',
       titulo: titulo,
@@ -72,12 +72,30 @@ class GestorIncidencias {
       cliente: cliente,
       categoria: categoria,
       estado: 'Pendiente',
+      prioridad: prioridad,
       fecha: DateTime.now().toIso8601String().split('T').first,
     );
     incidencias.insert(0, nuevo);
     cantidadPendientes++;
     await datos.guardar(incidencias);
   }
+
+  Future<void> cambiarPrioridad(String id, Prioridad prioridad) async {
+  for (final incidencia in incidencias) {
+    if (incidencia.id == id) {
+      final prioridadAnterior = incidencia.prioridad;
+      incidencia.prioridad = prioridad;
+
+      try {
+        await datos.guardar(incidencias);
+      } catch (_) {
+        incidencia.prioridad = prioridadAnterior;
+        rethrow;
+      }
+      return;
+    }
+  }
+}
 
   Future<void> reiniciarDemo() async {
     await datos.restaurarDatosDeEjemplo();

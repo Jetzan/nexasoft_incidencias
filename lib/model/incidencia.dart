@@ -1,3 +1,35 @@
+enum Prioridad {
+  baja,
+  media,
+  alta;
+
+  String get etiqueta {
+    switch (this) {
+      case Prioridad.baja:
+        return 'Baja';
+      case Prioridad.media:
+        return 'Media';
+      case Prioridad.alta:
+        return 'Alta';
+    }
+  }
+
+  static Prioridad desdeJson(Object? valor) {
+    switch (valor?.toString().trim().toLowerCase()) {
+      case 'baja':
+        return Prioridad.baja;
+      case 'media':
+        return Prioridad.media;
+      case 'alta':
+        return Prioridad.alta;
+      default:
+        return Prioridad.media;
+    }
+  }
+}
+
+
+
 class Incidencia {
   String id;
   String titulo;
@@ -6,6 +38,7 @@ class Incidencia {
   String categoria;
   String estado;
   String fecha;
+  Prioridad prioridad;
 
   Incidencia({
     required this.id,
@@ -15,6 +48,7 @@ class Incidencia {
     required this.categoria,
     required this.estado,
     required this.fecha,
+    this.prioridad = Prioridad.media,
   });
 
   factory Incidencia.desdeJson(Map<String, dynamic> m) {
@@ -26,6 +60,7 @@ class Incidencia {
       categoria: m['categoria']?.toString() ?? 'Software',
       estado: m['estado']?.toString() ?? 'Pendiente',
       fecha: m['fecha']?.toString() ?? '',
+      prioridad: Prioridad.desdeJson(m['prioridad']),
     );
   }
 
@@ -38,6 +73,7 @@ class Incidencia {
       'categoria': categoria,
       'estado': estado,
       'fecha': fecha,
+      'prioridad': prioridad.etiqueta,
     };
   }
 }

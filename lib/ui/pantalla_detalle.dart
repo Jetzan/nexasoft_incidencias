@@ -29,6 +29,24 @@ class _PantallaDetalleState extends State<PantallaDetalle> {
     }
   }
 
+  //Cambiar Prioridad
+  Future<void> cambiarPrioridad(String? valor) async {
+    if (valor == null) return;
+    setState(() => guardando = true);
+    try {
+      await widget.gestor.cambiarPrioridad(widget.id, Prioridad.desdeJson(valor));
+      if (mounted) setState(() {});
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No se pudo guardar: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => guardando = false);
+    }
+  }
+
+
+
   Widget fila(String etiqueta, String valor) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 7),
@@ -69,6 +87,16 @@ class _PantallaDetalleState extends State<PantallaDetalle> {
                       ),
                     ),
                     const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: item.prioridad.etiqueta,
+                      decoration: const InputDecoration(labelText: 'Prioridad actual', border: OutlineInputBorder()),
+                      items: Prioridad.values
+                          .map((p) => DropdownMenuItem(value: p.etiqueta, child: Text(p.etiqueta)))
+                          .toList(),
+                      onChanged: guardando ? null : cambiarPrioridad,
+                    ),
+                    const SizedBox(height: 12),
+
                     DropdownButtonFormField<String>(
                       value: item.estado,
                       decoration: const InputDecoration(labelText: 'Estado actual', border: OutlineInputBorder()),
